@@ -27,8 +27,10 @@ will be available by calling get_text() or get_graphic() as appropriate.
 
 RExec has a chaining interface.  This means you can do things like:
 
-    r_ex =(RExec(some_dir)
-           .append_file("some.R")
-           .append_file("other.R")
-           .execute())
-    r_ex.get_graphic('foo.svg', path='absolute')
+.. code:: python
+
+ r_ex =(RExec(some_dir)
+        .append_file("some.R")
+        .append_file("other.R")
+        .execute())
+ r_ex.get_graphic('foo.svg', path='absolute')
