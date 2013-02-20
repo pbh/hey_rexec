@@ -30,4 +30,4 @@ RExec has a chaining interface.  This means you can do things like:
           .append_file("some.R")
           .append_file("other.R")
           .execute())
-  r_ex.get_graphic('foo.svg', path='absolute')
+   r_ex.get_graphic('foo.svg', path='absolute')
