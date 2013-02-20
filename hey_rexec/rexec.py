@@ -4,7 +4,7 @@
     hey_rexec.rexec
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    SKEL
+    Utility for executing an R file in its own directory.
 
     :copyright: (c) 2013 by oDesk Corporation.
     :license: BSD, see LICENSE for more details.
@@ -33,16 +33,45 @@ def _read_file_with_localizer(fn, localizer=None):
     return s
 
 class RExec(object):
+    """
+    A chaining R executing object.
+
+    RExec lets you run R code and get the results from Python.  For the
+    most part, the interface is pretty hacky.  The goal is to make it
+    easy to automate the usage of existing R files, rather than make
+    elegant programs integrating R and Python.  (For the latter, you
+    might consider rpy or rpy2.)
+
+    An RExec object takes a directory where it will be run.  You can then
+    add R code to the object in a variety of ways (append_string,
+    append_file and so on).  When you are done appending to the RExec
+    object, you can use the execute() method which will run an R slave
+    process on all of the R that you have appended so far (concatenated
+    together.  Finally, you can get access to results of your R script
+    in a relatively unorthodox way.  Any files output with an "r_" prefix
+    will be available by calling get_text() or get_graphic() as appropriate.
+
+    RExec has a chaining interface.  This means you can do things like:
+
+      r_ex =(RExec(some_dir)
+              .append_file("some.R")
+              .append_file("other.R")
+              .execute())
+      r_ex.get_graphic('foo.svg', path='absolute')
+    """
+
     def __init__(self, cwd):
         self._results = []
         self._cur_r_str = ''
         self._cwd = cwd
 
     def append_string(self, s):
+        'Append a string to the R that will be executed.'
         self._cur_r_str = self._cur_r_str + "\n" + s + "\n"
         return self
 
     def append_file(self, fn, localizer=None):
+        'Append the contents of a file to the R that will be executed.'
         self.append_string(
             _read_file_with_localizer(fn, localizer)
             )
@@ -50,11 +79,13 @@ class RExec(object):
         return self
 
     def append_libraries(self, lib_list):
+        'Append a list of library() calls to the R that will be executed.'
         self._cur_r_str = self._cur_r_str + "\n" + '\n'.join(
             ["library('%s')" % lib for lib in lib_list]) + "\n"
         return self
 
     def append_graphic(self, typ, name, r_str):
+        'Append creation of a graphic to the R that will be executed.'
         if typ == 'png':
             self._cur_r_str += "\n" + """
 png('r_%s.png')
@@ -73,6 +104,7 @@ dev.off()
         return self
 
     def append_csv_read(self, fn, to_var):
+        'Append a read of a CSV file to the R that will be executed.'
         self._cur_r_str += "\n" + """
 %s <- read.csv('%s')
 """ % (to_var, fn)
@@ -80,6 +112,7 @@ dev.off()
         return self
 
     def append_sink(self, name, r_str):
+        'Append a sink() to the R that will be executed.'
         self._cur_r_str += "\n" + """
 sink('r_%s.txt')
 %s
@@ -89,6 +122,7 @@ sink()
         return self
 
     def execute(self):
+        'Execute the accumulated R code that has been appended to the object.'
         tmp_r_fn = os.tempnam(self._cwd)
         tmp_r_file = file(tmp_r_fn, 'w')
         tmp_r_file.write(self._cur_r_str)
@@ -124,6 +158,7 @@ sink()
         return self._results
 
     def get_text(self, name):
+        'Get textual content/path that was output to an r_{something}.{txt|html} file.'
         if self._results.has_key('txt') and self._results['txt'].has_key(name):
             return self._results['txt'][name]
         elif self._results.has_key('html') and self._results['html'].has_key(name):
@@ -132,6 +167,7 @@ sink()
             raise KeyError('No such text output %s.' % name)
 
     def get_graphic(self, name, path='relative'):
+        'Get path for graphic output as an r_{something}.{png|svg} file.'
         if path not in ('abs', 'absolute', 'rel', 'relative'):
             raise RuntimeError('Path %s is not a valid path type.' % path)
 
