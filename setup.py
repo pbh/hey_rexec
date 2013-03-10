@@ -5,6 +5,7 @@ setup(
     version='1.0.0',
     author='Paul Heymann',
     author_email='hey_rexec@heymann.be',
+    url='http://www.pybrid.com/',
     packages=['hey_rexec', ],
     license='LICENSE.txt',
     description='Hey! R Executable Object',
