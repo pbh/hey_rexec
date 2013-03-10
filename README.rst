@@ -22,7 +22,7 @@ append_file and so on).  When you are done appending to the RExec
 object, you can use the execute() method which will run an R slave
 process on all of the R that you have appended so far (concatenated
 together.  Finally, you can get access to results of your R script
-in a relatively unorthodox way.  Any files output with an "r_" prefix
+in a relatively unorthodox way.  Any files output with an "``r_``" prefix
 will be available by calling get_text() or get_graphic() as appropriate.
 
 RExec has a chaining interface.  This means you can do things like:
